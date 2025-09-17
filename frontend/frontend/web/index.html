@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataNirvana | Secure Data Wiping</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/TextPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        
+        :root {
+            --neon: #00f7ff;
+            --neon-dark: #0099ff;
+            --neon-pink: #ff00aa;
+            --bg: #00041a;
+            --panel: rgba(0, 10, 30, 0.85);
+            --text: #e0e0ff;
+            --accent: #ff00aa;
+            --glow: 0 0 15px rgba(0, 247, 255, 0.5);
+        }
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 247, 255, 0.05) 0%, transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 247, 0.05) 0%, transparent 30%),
+                linear-gradient(to bottom, rgba(0, 4, 26, 0.9), rgba(0, 10, 40, 0.9));
+            scroll-behavior: smooth;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Chakra Petch', sans-serif;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 12px var(--neon), 
+                         0 0 24px rgba(0, 247, 255, 0.4),
+                         0 0 36px rgba(0, 247, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .neon-glow {
+            box-shadow: var(--glow),
+                        inset 0 0 10px rgba(0, 247, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .neon-glow:hover {
+            box-shadow: 0 0 25px var(--neon),
+                        inset 0 0 15px rgba(0, 247, 255, 0.4);
+        }
+        
+        .scanlines {
+            background: 
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0px,
+                    transparent 1px,
+                    rgba(0, 247, 255, 0.08) 1px,
+                    rgba(0, 247, 255, 0.08) 2px
+                ),
+                linear-gradient(
+                    to bottom,
+                    rgba(0, 247, 255, 0.02) 0%,
+                    rgba(0, 247, 255, 0) 50%,
+                    rgba(0, 247, 255, 0.02) 100%
+                );
+            background-size: 100% 6px, 100% 100%;
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+        
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+        
+        .grid-overlay {
+            background-image: 
+                linear-gradient(rgba(0, 247, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 247, 255, 0.05) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: grid-move 30s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 60px; }
+        }
+        
+        .blackhole {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at center, 
+                    transparent 0%, 
+                    rgba(0, 0, 0, 0.8) 30%,
+                    black 100%),
+                conic-gradient(
+                    from 0deg at 50% 50%,
+                    rgba(0, 247, 255, 0.8) 0deg,
+                    rgba(255, 0, 247, 0.5) 90deg,
+                    rgba(0, 247, 255, 0.8) 180deg,
+                    rgba(255, 0, 247, 0.5) 270deg,
+                    rgba(0, 247, 255, 0.8) 360deg
+                );
+            box-shadow: 
+                0 0 80px rgba(0, 247, 255, 0.6),
+                0 0 160px rgba(0, 247, 255, 0.4),
+                inset 0 0 120px rgba(255, 0, 247, 0.6);
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
+            filter: blur(0.5px);
+            animation: rotate 60s linear infinite, pulse 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.05); }
+        }
+        
+        .terminal {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 5, 20, 0.8);
+            border: 1px solid var(--neon);
+            border-radius: 0.5rem;
+            box-shadow: 
+                var(--glow),
+                inset 0 0 15px rgba(0, 247, 255, 0.15);
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon), var(--neon-pink));
+            box-shadow: 0 0 10px var(--neon), 0 0 20px var(--neon-pink);
+            animation: pulse 3s ease-in-out infinite alternate;
+        }
+        
+        .terminal-cursor {
+            animation: blink 1s infinite, pulse 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .progress-bar {
+            height: 0.5rem;
+            background: rgba(0, 247, 255, 0.1);
+            border-radius: 0.25rem;
+            box-shadow: inset 0 0 10px rgba(0, 247, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(0, 247, 255, 0) 0%,
+                rgba(0, 247, 255, 0.3) 50%,
+                rgba(0, 247, 255, 0) 100%
+            );
+            animation: shine 2s linear infinite;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(
+                90deg, 
+                var(--neon-dark), 
+                var(--neon),
+                var(--neon-pink)
+            );
+            border-radius: 0.25rem;
+            transition: width 0.3s ease;
+            box-shadow: 
+                0 0 10px var(--neon),
+                0 0 20px var(--neon-pink);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .device-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform, box-shadow;
+        }
+        
+        .device-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 10px 25px rgba(0, 247, 255, 0.6),
+                0 0 40px rgba(0, 247, 255, 0.3);
+            border-color: var(--neon);
+            background: rgba(0, 247, 255, 0.03);
+        }
+        
+        /* Interstellar particle effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+            will-change: transform;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: radial-gradient(
+                circle at center,
+                var(--neon) 0%,
+                transparent 70%
+            );
+            border-radius: 50%;
+            animation: float linear infinite;
+            filter: blur(0.5px);
+            will-change: transform, opacity;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-pink);
+        }
+
+        /* Form inputs */
+        input, select {
+            transition: all 0.3s ease;
+            outline: none !important;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--neon) !important;
+            box-shadow: 0 0 0 1px var(--neon) !important;
+        }
+
+        /* Button hover effects */
+        .btn-hover {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+        }
+
+        .btn-hover:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Smooth transitions for all elements */
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Floating animation for CTA elements */
+        .float-anim {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Gradient text */
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Gargantua Black Hole -->
+    <div class="blackhole"></div>
+    
+    <!-- Interstellar particles -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Navigation -->
+    <nav class="border-b border-gray-900 bg-black bg-opacity-70 backdrop-blur-md fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i data-feather="shield" class="text-green-500 w-8 h-8"></i>
+                        <span class="ml-2 text-xl font-bold text-white neon-text">DataNirvana</span>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" class="text-green-400 hover:text-green-300 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300">Dashboard</a>
+                        <a href="#devices" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300">Devices</a>
+                        <a href="#features" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300">Features</a>
+                        <a href="#stats" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300">Stats</a>
+                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300">Settings</a>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-4 flex items-center md:ml-6">
+                        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center transition-all duration-300 neon-glow btn-hover ripple">
+                            <i data-feather="plus" class="w-4 h-4 mr-2"></i>
+                            New Job
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="relative pt-16">
+
+        <!-- Hero Section -->
+        <section class="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-60"></div>
+            </div>
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-8" data-aos="fade-right">
+                        <h1 class="text-4xl md:text-6xl font-bold text-white leading-tight">
+                            <span class="gradient-text bg-gradient-to-r from-cyan-400 to-blue-500 neon-text">Secure</span> Data Erasure Solution
+                        </h1>
+                        <p class="text-xl text-gray-300 opacity-0" id="typing-text">
+                            Certified data erasure with military-grade algorithms. Permanently destroy sensitive data beyond any recovery method.
+                        </p>
+                        <div class="flex space-x-4">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium flex items-center neon-glow transform hover:scale-105 transition duration-300 btn-hover ripple">
+                                <i data-feather="play" class="w-5 h-5 mr-2"></i>
+                                Start Wiping Now
+                            </button>
+                            <button class="border border-blue-400 text-blue-400 hover:bg-blue-900 hover:bg-opacity-30 px-6 py-3 rounded-md font-medium flex items-center transition duration-300 btn-hover ripple">
+                                <i data-feather="book" class="w-5 h-5 mr-2"></i>
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative" data-aos="fade-left">
+                        <div class="relative p-1 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 float-anim">
+                            <div class="bg-gray-900 rounded-lg overflow-hidden p-6">
+                                <div class="terminal p-4 h-96 overflow-y-auto">
+                                    <div class="text-green-400 mb-4">$ DataNirvana v3.2.1</div>
+                                    <div class="text-green-400 mb-2">$ scan-devices --all</div>
+                                    <div class="text-gray-400 mb-4">
+                                        <div>• Found 3 storage devices:</div>
+                                        <div class="ml-4">- /dev/sda (500GB SSD)</div>
+                                        <div class="ml-4">- /dev/sdb (1TB HDD)</div>
+                                        <div class="ml-4">- /dev/nvme0 (1TB NVMe)</div>
+                                    </div>
+                                    <div class="text-green-400 mb-2">$ initiate-wipe --method=nist-800-88 --passes=3 --device=/dev/sda</div>
+                                    <div class="text-gray-400 mb-2">
+                                        <div>• Starting secure wipe on /dev/sda</div>
+                                        <div class="ml-4">- Pass 1/3: 25% complete</div>
+                                        <div class="flex items-center mt-1">
+                                            <div class="progress-bar w-full mr-2">
+                                                <div class="progress-fill" style="width: 25%"></div>
+                                            </div>
+                                            <span class="text-xs">25%</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-gray-400">
+                                        <div class="flex items-center">
+                                            <span class="mr-2">Status:</span>
+                                            <span class="text-yellow-400">In Progress</span>
+                                            <span class="terminal-cursor ml-1">|</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 grid-overlay pointer-events-none"></div>
+                        <div class="absolute inset-0 scanlines pointer-events-none"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+
+        <!-- Features Section -->
+        <section id="features" class="py-20 px-4 sm:px-6 lg:px-8 bg-black bg-opacity-50 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Certified Data Destruction</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Our solution meets and exceeds industry standards for secure data erasure
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-8 hover:border-green-400 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="text-green-400 mb-4">
+                            <i data-feather="shield" class="w-10 h-10"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">NIST 800-88 Compliant</h3>
+                        <p class="text-gray-300">
+                            Meets the strict guidelines set by the National Institute of Standards and Technology for media sanitization.
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-8 hover:border-green-400 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="text-green-400 mb-4">
+                            <i data-feather="lock" class="w-10 h-10"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Multiple Algorithms</h3>
+                        <p class="text-gray-300">
+                            Choose from DoD 5220.22-M, Gutmann, Schneier, and other industry-standard wiping methods.
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-8 hover:border-green-400 transition-all duration-300 transform hover:-translate-y-2">
+                        <div class="text-green-400 mb-4">
+                            <i data-feather="file-text" class="w-10 h-10"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Detailed Reporting</h3>
+                        <p class="text-gray-300">
+                            Generate comprehensive audit reports with digital signatures for compliance documentation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Device Wiping Section -->
+        <section id="devices" class="py-20 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-6" data-aos="fade-right">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white">Create New Wiping Job</h2>
+                        <p class="text-xl text-gray-300">
+                            Configure your data wiping parameters with our intuitive interface
+                        </p>
+                        
+                        <form class="space-y-6">
+                            <div>
+                                <label for="device_id" class="block text-sm font-medium text-gray-300 mb-1">Device ID</label>
+                                <div class="relative">
+                                    <select id="device_id" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 focus:border-green-500 focus:ring-green-500 transition-all duration-300">
+                                        <option>SIM-001</option>
+                                        <option>SIM-002</option>
+                                        <option>SIM-003</option>
+                                        <option>HDD-001</option>
+                                        <option>SSD-001</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-feather="hard-drive" class="w-5 h-5 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="device_type" class="block text-sm font-medium text-gray-300 mb-1">Device Type</label>
+                                <div class="relative">
+                                    <select id="device_type" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 focus:border-green-500 focus:ring-green-500 transition-all duration-300">
+                                        <option>HDD</option>
+                                        <option>SSD</option>
+                                        <option>NVMe</option>
+                                        <option>USB</option>
+                                        <option>Virtual Disk</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-feather="cpu" class="w-5 h-5 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="method" class="block text-sm font-medium text-gray-300 mb-1">Wiping Method</label>
+                                <div class="relative">
+                                    <select id="method" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 focus:border-green-500 focus:ring-green-500 transition-all duration-300">
+                                        <option>NIST 800-88 (1 pass)</option>
+                                        <option>DoD 5220.22-M (3 passes)</option>
+                                        <option>Gutmann (35 passes)</option>
+                                        <option>Schneier (7 passes)</option>
+                                        <option>Custom Pattern</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-feather="shield" class="w-5 h-5 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="operator" class="block text-sm font-medium text-gray-300 mb-1">Operator</label>
+                                <div class="relative">
+                                    <input type="text" id="operator" value="admin" class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 pl-10 focus:border-green-500 focus:ring-green-500 transition-all duration-300">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i data-feather="user" class="w-5 h-5 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center neon-glow transform hover:scale-105 transition duration-300 btn-hover ripple">
+                                <i data-feather="play" class="w-5 h-5 mr-2"></i>
+                                Start Wiping Process
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="space-y-6" data-aos="fade-left">
+                        <div class="bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                                <i data-feather="activity" class="w-5 h-5 mr-2 text-blue-400"></i>
+                                Active Wiping Jobs
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div class="device-card bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg p-4 transition-all duration-300 hover:shadow-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-medium text-white">SIM-001</h4>
+                                            <p class="text-sm text-gray-400">500GB SSD</p>
+                                        </div>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-yellow-900 text-yellow-200">In Progress</span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm text-gray-300 mb-1">
+                                            <span>NIST 800-88</span>
+                                            <span>25%</span>
+                                        </div>
+                                        <div class="progress-bar w-full">
+                                            <div class="progress-fill" style="width: 25%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="device-card bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg p-4 transition-all duration-300 hover:shadow-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-medium text-white">HDD-002</h4>
+                                            <p class="text-sm text-gray-400">1TB HDD</p>
+                                        </div>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-900 text-green-200">Completed</span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm text-gray-300 mb-1">
+                                            <span>DoD 5220.22-M</span>
+                                            <span>100%</span>
+                                        </div>
+                                        <div class="progress-bar w-full">
+                                            <div class="progress-fill" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="device-card bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg p-4 transition-all duration-300 hover:shadow-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-medium text-white">NVMe-003</h4>
+                                            <p class="text-sm text-gray-400">2TB NVMe</p>
+                                        </div>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-900 text-blue-200">Queued</span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm text-gray-300 mb-1">
+                                            <span>Gutmann Method</span>
+                                            <span>0%</span>
+                                        </div>
+                                        <div class="progress-bar w-full">
+                                            <div class="progress-fill" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                                <i data-feather="alert-triangle" class="w-5 h-5 mr-2 text-red-400"></i>
+                                Warnings & Errors
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mt-1">
+                                        <i data-feather="alert-circle" class="w-5 h-5 text-yellow-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-gray-300">Device SIM-002 has bad sectors (12 found). Consider physical destruction.</p>
+                                        <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mt-1">
+                                        <i data-feather="alert-circle" class="w-5 h-5 text-red-400"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-gray-300">Failed to verify wipe on HDD-005. Recommend re-wiping.</p>
+                                        <p class="text-xs text-gray-500 mt-1">5 hours ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Stats Section -->
+        <section id="stats" class="py-16 px-4 sm:px-6 lg:px-8 bg-black bg-opacity-50 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-6" data-aos="fade-up">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-cyan-900 bg-opacity-30 mr-4">
+                                <i data-feather="hard-drive" class="w-6 h-6 text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Devices Wiped</p>
+                                <p class="text-2xl font-bold text-white counter" data-target="1248">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-6" data-aos="fade-up" data-aos-delay="100">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-blue-900 bg-opacity-30 mr-4">
+                                <i data-feather="database" class="w-6 h-6 text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Data Destroyed</p>
+                                <p class="text-2xl font-bold text-white counter" data-target="548">0</p>
+                                <span class="text-sm text-gray-400">TB</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-6" data-aos="fade-up" data-aos-delay="200">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-purple-900 bg-opacity-30 mr-4">
+                                <i data-feather="clock" class="w-6 h-6 text-purple-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Avg. Wipe Time</p>
+                                <p class="text-2xl font-bold text-white counter" data-target="138">0</p>
+                                <span class="text-sm text-gray-400">minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-900 bg-opacity-70 border border-gray-800 rounded-xl p-6" data-aos="fade-up" data-aos-delay="300">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-yellow-900 bg-opacity-30 mr-4">
+                                <i data-feather="check-circle" class="w-6 h-6 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-400">Success Rate</p>
+                                <p class="text-2xl font-bold text-white counter" data-target="99.7">0</p>
+                                <span class="text-sm text-gray-400">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-black bg-opacity-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">DataNirvana</h3>
+                    <p class="text-gray-400 text-sm">
+                        Enterprise-grade data destruction solutions for government, military, and corporate clients.
+                    </p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                            <i data-feather="twitter" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                            <i data-feather="github" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                            <i data-feather="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Solutions</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Hard Drive Wiping</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">SSD Sanitization</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Mobile Device Erasure</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Virtual Machine Sanitization</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">API Reference</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Compliance Guides</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">White Papers</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Contact</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Press</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">
+                    © 2023 DataNirvana. All rights reserved.
+                </p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Initialize GSAP animations
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Create interstellar particles
+        function createParticles() {
+            const particlesEl = document.getElementById('particles');
+            const particleCount = 150;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random position
+                gsap.set(particle, {
+                    left: Math.random() * 100 + 'vw',
+                    top: Math.random() * 100 + 'vh',
+                    width: Math.random() * 3 + 1 + 'px',
+                    height: Math.random() * 3 + 1 + 'px',
+                    opacity: Math.random() * 0.5 + 0.1
+                });
+                
+                // Animate each particle with GSAP for smoother performance
+                gsap.to(particle, {
+                    y: -window.innerHeight - 100,
+                    x: '+=100',
+                    duration: Math.random() * 20 + 10,
+                    delay: Math.random() * 5,
+                    ease: 'none',
+                    repeat: -1
+                });
+                
+                particlesEl.appendChild(particle);
+            }
+        }
+        
+        // Initialize particles
+        createParticles();
+        
+        // Animate black hole with GSAP
+        gsap.to('.blackhole', {
+            scale: 1.05,
+            opacity: 0.4,
+            duration: 15,
+            yoyo: true,
+            repeat: -1,
+            ease: 'sine.inOut'
+        });
+        
+        // Typing animation for hero text
+        const typingText = document.getElementById('typing-text');
+        if (typingText) {
+            const text = typingText.textContent;
+            typingText.textContent = '';
+            gsap.to(typingText, {
+                opacity: 1,
+                duration: 0.5,
+                onComplete: () => {
+                    let i = 0;
+                    const timer = setInterval(() => {
+                        if (i < text.length) {
+                            typingText.textContent += text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(timer);
+                        }
+                    }, 30);
+                }
+            });
+        }
+        
+        // Counter animation for stats
+        const counters = document.querySelectorAll('.counter');
+        if (counters) {
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const suffix = counter.textContent.includes('%') ? '%' : '';
+                const duration = 2;
+                
+                gsap.to({}, {
+                    scrollTrigger: {
+                        trigger: counter,
+                        start: 'top 80%',
+                        onEnter: () => {
+                            const startTime = Date.now();
+                            const countUp = () => {
+                                const elapsed = (Date.now() - startTime) / 1000;
+                                const progress = Math.min(elapsed / duration, 1);
+                                const value = progress * target;
+                                
+                                if (suffix === '%') {
+                                    counter.textContent = value.toFixed(1) + suffix;
+                                } else {
+                                    counter.textContent = Math.round(value) + suffix;
+                                }
+                                
+                                if (progress < 1) {
+                                    requestAnimationFrame(countUp);
+                                }
+                            };
+                            requestAnimationFrame(countUp);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Initialize AOS animations with GSAP integration
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            initClassName: 'aos-init',
+            animatedClassName: 'aos-animate'
+        });
+        
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    gsap.to(window, {
+                        duration: 1,
+                        scrollTo: {
+                            y: targetElement,
+                            offsetY: 80
+                        },
+                        ease: 'power2.inOut'
+                    });
+                }
+            });
+        });
+        
+        // Ripple effect for buttons
+        document.querySelectorAll('.ripple').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple-effect';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+        
+        // Make terminal cursor blink
+        setInterval(() => {
+            const cursor = document.querySelector('.terminal-cursor');
+            if (cursor) {
+                cursor.style.visibility = cursor.style.visibility === 'hidden' ? 'visible' : 'hidden';
+            }
+        }, 500);
+        
+        // Form submission handler
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const deviceId = document.getElementById('device_id').value;
+                const deviceType = document.getElementById('device_type').value;
+                const method = document.getElementById('method').value;
+                const operator = document.getElementById('operator').value;
+                
+                // Create payload
+                const payload = {
+                    device_id: deviceId,
+                    device_type: deviceType,
+                    method: method,
+                    operator: operator
+                };
+                
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = `<i data-feather="loader" class="w-5 h-5 mr-2 animate-spin"></i>Processing...`;
+                feather.replace();
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // Reset button
+                    submitBtn.innerHTML = originalText;
+                    feather.replace();
+                    
+                    // Show success message
+                    const successEl = document.createElement('div');
+                    successEl.className = 'mt-4 p-3 bg-green-900 bg-opacity-50 border border-green-400 rounded-lg text-green-100';
+                    successEl.innerHTML = `
+                        <div class="flex items-center">
+                            <i data-feather="check-circle" class="w-5 h-5 mr-2"></i>
+                            Wipe job started for ${deviceId} (${deviceType}) using ${method}
+                        </div>
+                    `;
+                    
+                    form.appendChild(successEl);
+                    feather.replace();
+                    
+                    // Remove after 5 seconds
+                    setTimeout(() => {
+                        gsap.to(successEl, {
+                            opacity: 0,
+                            height: 0,
+                            margin: 0,
+                            padding: 0,
+                            duration: 0.5,
+                            onComplete: () => successEl.remove()
+                        });
+                    }, 5000);
+                }, 2000);
+            });
+        }
+        
+        // Initialize feather icons
+        feather.replace();
+        
+        // Parallax effect for blackhole on scroll
+        gsap.to('.blackhole', {
+            scrollTrigger: {
+                scrub: 0.5
+            },
+            y: (scrollY) => scrollY * 0.2,
+            scale: (scrollY) => 1 + scrollY * 0.0002,
+            opacity: (scrollY) => 0.2 + (scrollY / 1000),
+            ease: 'none'
+        });
+        
+        // Hover effects for feature cards
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    scale: 1.02,
+                    boxShadow: '0 10px 25px rgba(0, 247, 255, 0.4)',
+                    duration: 0.3
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    scale: 1,
+                    boxShadow: 'none',
+                    duration: 0.3
+                });
+            });
+        });
+    </script>
+</body>
+</html>
